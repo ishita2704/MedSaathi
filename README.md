@@ -1,6 +1,5 @@
 # 🏥 Medical Report Diagnosis
 
-![YouTube Thumbnail](/assets/thumbnail.png)
 
 This is the **FastAPI-based backend** for the **Medical Diagnosis Application**, which provides authentication, PDF report upload, AI-powered medical diagnosis using LLaMA 3 via Groq API, and stores metadata in MongoDB with Pinecone for vector storage.
 
@@ -155,17 +154,3 @@ API will be available at: **[http://127.0.0.1:8000](http://127.0.0.1:8000)**
 - ✅ **Offline PDF Processing Mode**
 
 ---
-
-## 📜 License
-
-This project is licensed under the **MIT License**.
-
----
-
-## 📬 Contact
-
-For any queries, feel free to connect:
-
-- **Author:** \[Supratim Nag]
-- **Email:** [snsupratim@gmail.com](mailto:snsupratim@gmail.com)
-- **YouTube:** [sn dev](https://www.youtube.com/@sn-develpoment)
