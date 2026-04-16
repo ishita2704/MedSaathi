@@ -18,10 +18,8 @@ It also includes 👨‍⚕️ role-based access for doctors to view patient dia
 | Feature | Preview |
 | --- | --- |
 | 🏠 **Home Page** | ![Home Page](/assets/homepage.png) |
-| 🧠 **Brain Tumor Input Image** | ![Brain Tumor Input](/assets/brain%20tumor.jpg) |
 | 🧠 **Brain Tumor Report Screen** | ![Brain Tumor Report](/assets/brain_tumor_report.png) |
 | 🧠 **Brain Tumor Result Screen** | ![Brain Tumor Result](/assets/brain_tumor_model_result.png) |
-| 🫁 **Pulmonary Lung CT Input Image** | ![Pulmonary Lung CT Input](/assets/lungs%20pulmonary%20disease.png) |
 | 🫁 **Pulmonary Lung CT Report Screen** | ![Pulmonary Lung CT Report](/assets/pulmonary_lung_disease_report.png) |
 | 🫁 **Pulmonary Lung CT Result Screen** | ![Pulmonary Lung CT Result](/assets/pulmonary_lung_disease_result.png) |
 | 🩻 **Lungs X-ray Input Image** | ![Lungs Xray Input](/assets/lungs_xray.png) |
