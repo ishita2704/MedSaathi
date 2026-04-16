@@ -24,8 +24,7 @@ It also includes 👨‍⚕️ role-based access for doctors to view patient dia
 | 🫁 **Pulmonary Lung CT Result Screen** | ![Pulmonary Lung CT Result](/assets/pulmonary_lung_disease_result.png) |
 | 🩻 **Lungs X-ray Input Image** | ![Lungs Xray Input](/assets/lungs_xray.png) |
 | 🩻 **Lungs X-ray Result Screen** | ![Lungs Xray Result](/assets/lungs_xray_result.png) |
-| 🩻 **Normal Lungs X-ray Sample** | ![Normal Lungs Xray Sample](/assets/normal%20lungsXray.jpeg) |
-| 🦠 **Tuberculosis X-ray Sample** | ![Tuberculosis Xray Sample](/assets/TuberculosisXray.png) |
+
 
 📄 **Sample PDF Report:** [View Sample Report](/assets/sample-report.pdf)
 
