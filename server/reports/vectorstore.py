@@ -2,15 +2,13 @@ import os
 import time
 import asyncio
 from pathlib import Path
+from typing import Dict, List
+
 from dotenv import load_dotenv
-from tqdm.auto import tqdm
-from pinecone import Pinecone, ServerlessSpec
-from langchain_community.document_loaders import PyPDFLoader
+from fastapi import UploadFile
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
-from ..config.db import reports_collection
-from typing import List
-from fastapi import UploadFile
+from pinecone import Pinecone, ServerlessSpec
 
 load_dotenv()
 
@@ -36,41 +34,85 @@ if PINECONE_INDEX_NAME not in existing_indexes:
 index=pc.Index(PINECONE_INDEX_NAME)
 
 
+async def save_image_upload(image_file: UploadFile, doc_id: str, prefix: str) -> Dict[str, str]:
+    filename = Path(image_file.filename or f"{prefix}.png").name
+    save_name = f"{doc_id}_{prefix}_{filename}"
+    save_path = Path(UPLOAD_DIR) / save_name
+    content = await image_file.read()
+    with open(save_path, "wb") as f:
+        f.write(content)
+
+    return {
+        "filename": filename,
+        "saved_path": str(save_path),
+    }
+
+
 async def load_vectorstore(uploaded_files:List[UploadFile],uploaded:str,doc_id:str):
     """
         Save files, chunk texts, embed texts, upsert in Pinecone and write metadata to Mongo
     """
 
-    embed_model=GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+    from langchain_community.document_loaders import PyPDFLoader, TextLoader
+
+    # Legacy text embedding models are deprecated in the v1beta API.
+    # Use the Gemini embedding model and explicitly truncate to match Pinecone dimension.
+    embed_model=GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
+    
+    all_chunks = []
+    processed_filenames = []
+    splitter=RecursiveCharacterTextSplitter(chunk_size=500,chunk_overlap=100)
 
     for file in uploaded_files:
         filename=Path(file.filename).name
-        save_path=Path(UPLOAD_DIR)/ f"{doc_id}_{filename}"
+        save_path=Path(UPLOAD_DIR) / f"{doc_id}_{filename}"
         content=await file.read()
         with open(save_path,"wb") as f:
             f.write(content)
+            
+        if filename.lower().endswith('.pdf'):
+            loader = PyPDFLoader(str(save_path))
+        elif filename.lower().endswith('.txt'):
+            loader = TextLoader(str(save_path))
+        else:
+            continue
+            
+        try:
+            documents = loader.load()
+            chunks = splitter.split_documents(documents)
+            for chunk in chunks:
+                chunk.metadata['source_file'] = filename
+            all_chunks.extend(chunks)
+            processed_filenames.append(filename)
+        except Exception as e:
+            print(f"Error loading {filename}: {e}")
 
-    # load pdf pages
-    loader=PyPDFLoader(str(save_path))
-    documents=loader.load()
-    splitter=RecursiveCharacterTextSplitter(chunk_size=500,chunk_overlap=100)
-    chunks= splitter.split_documents(documents)
+    if not all_chunks:
+        return {
+            "filenames": processed_filenames,
+            "num_chunks": 0,
+            "has_text_reports": False,
+        }
 
-    texts=[chunk.page_content for chunk in chunks]
-    ids=[f"{doc_id}-{i}" for i in range(len(chunks))]
+    texts=[chunk.page_content for chunk in all_chunks]
+    ids=[f"{doc_id}-{i}" for i in range(len(all_chunks))]
     metadatas=[
             {
-                "source": filename,
+                "source": chunk.metadata.get("source_file", "unknown"),
                 "doc_id": doc_id,
                 "uploader": uploaded,
                 "page": chunk.metadata.get("page", None),
                 "text": chunk.page_content[:2000]  # store snippet in metadata (avoid huge fields)
             }
-            for chunk in chunks
+            for chunk in all_chunks
     ]
 
     # get embeddings in thread
-    embeddings=await asyncio.to_thread(embed_model.embed_documents,texts)
+    embeddings=await asyncio.to_thread(
+        embed_model.embed_documents,
+        texts,
+        output_dimensionality=768,
+    )
     # upsert - run in thread to avoid blocking
     def upsert():
         index.upsert(vectors=list(zip(ids,embeddings,metadatas)))
@@ -78,12 +120,8 @@ async def load_vectorstore(uploaded_files:List[UploadFile],uploaded:str,doc_id:s
 
     await asyncio.to_thread(upsert)
 
-    # save report  metadata in mongo 
-    reports_collection.insert_one({
-                "doc_id": doc_id,
-                "filename":filename,
-                "uploader": uploaded,
-                "num_chunks":len(chunks),
-                "uploaded_at":time.time()
-                
-    })
+    return {
+        "filenames": processed_filenames,
+        "num_chunks": len(all_chunks),
+        "has_text_reports": True,
+    }

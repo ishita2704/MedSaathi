@@ -1,0 +1,1 @@
+hello text test file parsing test embedding test pinecone test loop

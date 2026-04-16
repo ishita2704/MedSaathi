@@ -15,4 +15,4 @@ streamlit
 requests
 PyPDF2
 tqdm
-
+uvicorn

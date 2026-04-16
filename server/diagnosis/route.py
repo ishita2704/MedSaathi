@@ -3,6 +3,7 @@ from ..auth.route import authenticate
 from .query import diagnosis_report
 from ..config.db import reports_collection, diagnosis_collection
 import time
+import traceback
 
 router=APIRouter(prefix="/diagnosis",tags=["diagnosis"])
 
@@ -18,17 +19,23 @@ async def diagnos(user=Depends(authenticate),doc_id:str=Form(...),question:str=F
     
     # if user is a patient and want diagnosis from his own report
     if user["role"]=="patient":
-        res=await diagnosis_report(user["username"],doc_id,question)
-        # persist the diagnosis report
-        diagnosis_collection.insert_one({
-            "doc_id": doc_id,
-            "requester": user["username"],
-            "question": question,
-            "answer": res.get("diagnosis"),
-            "sources": res.get("sources", []),
-            "timestamp": time.time()
-        })
-        return res
+        try:
+            res=await diagnosis_report(user["username"],doc_id,question, report=report)
+            # persist the diagnosis report
+            diagnosis_collection.insert_one({
+                "doc_id": doc_id,
+                "requester": user["username"],
+                "question": question,
+                "answer": res.get("diagnosis"),
+                "sources": res.get("sources", []),
+                "timestamp": time.time()
+            })
+            return res
+        except Exception as e:
+            # Ensure the client gets a JSON body with a useful error message.
+            print("Diagnosis generation error:", str(e))
+            print(traceback.format_exc())
+            raise HTTPException(status_code=500, detail=f"Diagnosis generation failed: {str(e)}")
     
     # if the user is a doctor or other, then they can't ask for diagnosis
     if user["role"] in ("doctor","admin"):
