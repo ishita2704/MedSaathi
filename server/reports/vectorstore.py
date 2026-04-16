@@ -6,7 +6,7 @@ from typing import Dict, List
 
 from dotenv import load_dotenv
 from fastapi import UploadFile
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from pinecone import Pinecone, ServerlessSpec
 
