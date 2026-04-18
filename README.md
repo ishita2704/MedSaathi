@@ -12,8 +12,10 @@ It is designed to assist in identifying conditions (e.g., brain tumors, lung abn
 It also includes 👨‍⚕️ role-based access for doctors to view patient diagnosis history.
 
 ---
+## 🎥 Demo
+👉 [![Watch Demo](https://img.youtube.com/vi/EXK9VDGwpxU/0.jpg)](https://youtu.be/EXK9VDGwpxU)
 
-## 📸 Screenshots & Demo
+## 📸 Screenshots
 
 | Feature | Preview |
 | --- | --- |
